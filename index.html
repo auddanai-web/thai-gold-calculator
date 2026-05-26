@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="เครื่องคำนวณราคาทองคำเยาวราช รองรับทองคำไทย 96.5% และทองสากล 24K, 22K, 18K, 14K, 10K, 9K พร้อมราคาจำลองแบบ real-time" />
+  <title>Thai Gold Calculator | เครื่องคำนวณราคาทองคำเยาวราช</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            ink: '#121214',
+            panel: '#191A1F',
+            panelSoft: '#202127',
+            premiumGold: '#D4AF37',
+            brightGold: '#FFD700',
+            liveGreen: '#39FF88'
+          },
+          fontFamily: {
+            sans: ['Inter', 'Kanit', 'sans-serif']
+          },
+          boxShadow: {
+            gold: '0 0 0 1px rgba(212, 175, 55, .22), 0 24px 80px rgba(0, 0, 0, .32)',
+            focusGold: '0 0 0 4px rgba(212, 175, 55, .16)'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      color-scheme: dark;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 18% 12%, rgba(212, 175, 55, .13), transparent 30rem),
+        radial-gradient(circle at 86% 18%, rgba(57, 255, 136, .08), transparent 28rem),
+        #121214;
+    }
+
+    .light body {
+      background:
+        radial-gradient(circle at 20% 10%, rgba(212, 175, 55, .14), transparent 30rem),
+        radial-gradient(circle at 88% 18%, rgba(16, 185, 129, .08), transparent 28rem),
+        #F7F7F4;
+      color: #121214;
+    }
+
+    .light .text-white,
+    .light .text-zinc-200 {
+      color: #121214 !important;
+    }
+
+    .light .text-zinc-300,
+    .light .text-zinc-400,
+    .light .text-zinc-500 {
+      color: #52525B !important;
+    }
+
+    .light [class*="border-white/"] {
+      border-color: rgba(18, 18, 20, .1) !important;
+    }
+
+    .light [class*="bg-white/"] {
+      background-color: rgba(18, 18, 20, .035) !important;
+    }
+
+    .glass {
+      border: 1px solid rgba(255, 255, 255, .08);
+      background: rgba(25, 26, 31, .78);
+      backdrop-filter: blur(24px);
+    }
+
+    .light .glass {
+      border-color: rgba(18, 18, 20, .08);
+      background: rgba(255, 255, 255, .78);
+    }
+
+    .field {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, .1);
+      background: rgba(255, 255, 255, .045);
+      color: #fff;
+      outline: none;
+      transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+
+    .light .field {
+      border-color: rgba(18, 18, 20, .12);
+      background: rgba(18, 18, 20, .035);
+      color: #121214;
+    }
+
+    .field:focus {
+      border-color: rgba(212, 175, 55, .72);
+      box-shadow: 0 0 0 4px rgba(212, 175, 55, .16);
+      background: rgba(255, 255, 255, .07);
+    }
+
+    .gold-text {
+      background: linear-gradient(135deg, #FFF1A8, #D4AF37 48%, #A77B13);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .live-dot {
+      animation: pulseLive 1.6s ease-in-out infinite;
+    }
+
+    @keyframes pulseLive {
+      0%, 100% {
+        opacity: .55;
+        box-shadow: 0 0 0 0 rgba(57, 255, 136, .35);
+      }
+      50% {
+        opacity: 1;
+        box-shadow: 0 0 0 8px rgba(57, 255, 136, 0);
+      }
+    }
+  </style>
+</head>
+<body class="font-sans text-white antialiased light:text-ink">
+  <header class="mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
+    <a href="#" class="flex items-center gap-3" aria-label="Thai Gold Calculator">
+      <span class="grid h-10 w-10 place-items-center rounded-full border border-premiumGold/35 bg-premiumGold/10 text-lg font-extrabold text-brightGold">฿</span>
+      <span>
+        <span class="block text-sm font-semibold tracking-wide text-white light:text-ink">Thai Gold Calculator</span>
+        <span class="block text-xs text-zinc-400 light:text-zinc-600">Yaowarat price estimator</span>
+      </span>
+    </a>
+    <nav class="hidden items-center gap-6 text-sm text-zinc-400 light:text-zinc-600 md:flex">
+      <a class="transition hover:text-premiumGold" href="#calculator">คำนวณ</a>
+      <a class="transition hover:text-premiumGold" href="#prices">ราคาทอง</a>
+      <a class="transition hover:text-premiumGold" href="#faq">FAQ</a>
+    </nav>
+    <button id="themeToggle" type="button" class="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-zinc-200 transition hover:border-premiumGold/50 hover:text-brightGold light:border-ink/10 light:bg-ink/5 light:text-ink">
+      Dark
+    </button>
+  </header>
+
+  <main>
+    <section class="mx-auto grid w-full max-w-7xl items-center gap-8 px-5 pb-10 pt-5 sm:px-8 lg:grid-cols-[1.04fr_.96fr] lg:pb-16 lg:pt-10">
+      <div class="max-w-2xl">
+        <div id="heroStatus" class="mb-5 inline-flex items-center gap-2 rounded-full border border-premiumGold/25 bg-premiumGold/10 px-3 py-1 text-xs font-semibold text-brightGold">
+          <span class="h-2 w-2 rounded-full bg-liveGreen live-dot"></span>
+          Gold Traders Association feed
+        </div>
+        <h1 class="text-4xl font-extrabold leading-tight tracking-normal text-white light:text-ink sm:text-5xl lg:text-6xl">
+          เครื่องคำนวณ
+          <span class="gold-text">ราคาทองคำเยาวราช</span>
+        </h1>
+        <p class="mt-5 max-w-xl text-base leading-8 text-zinc-300 light:text-zinc-700 sm:text-lg">
+          ประเมินมูลค่าทองคำไทย 96.5% และทองมาตรฐานสากลได้ทันที รองรับหน่วยบาททองและกรัม พร้อมแดชบอร์ดราคาซื้อขายจำลองสำหรับเริ่มต้นพัฒนาเว็บจริง
+        </p>
+      </div>
+
+      <aside id="prices" class="glass rounded-3xl p-5 shadow-gold sm:p-6">
+        <div class="mb-5 flex items-start justify-between gap-4">
+          <div>
+            <p class="text-sm text-zinc-400 light:text-zinc-600">Live Prices Dashboard</p>
+            <h2 class="mt-1 text-2xl font-bold">ราคาทองวันนี้</h2>
+          </div>
+          <div class="rounded-full border border-liveGreen/25 bg-liveGreen/10 px-3 py-1 text-xs font-bold text-liveGreen">
+            <span class="mr-1 inline-block h-2 w-2 rounded-full bg-liveGreen live-dot"></span>LIVE
+          </div>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-2">
+          <article class="rounded-2xl border border-white/10 bg-white/[.045] p-4 light:border-ink/10 light:bg-ink/[.035]">
+            <p class="text-sm text-zinc-400 light:text-zinc-600">ทองคำแท่ง 96.5%</p>
+            <div class="mt-4 space-y-3">
+              <div class="flex items-end justify-between gap-3">
+                <span class="text-sm text-zinc-400 light:text-zinc-600">รับซื้อ</span>
+                <strong id="barBuy" class="text-xl text-liveGreen">-</strong>
+              </div>
+              <div class="flex items-end justify-between gap-3">
+                <span class="text-sm text-zinc-400 light:text-zinc-600">ขายออก</span>
+                <strong id="barSell" class="text-xl text-brightGold">-</strong>
+              </div>
+            </div>
+          </article>
+
+          <article class="rounded-2xl border border-white/10 bg-white/[.045] p-4 light:border-ink/10 light:bg-ink/[.035]">
+            <p class="text-sm text-zinc-400 light:text-zinc-600">ทองรูปพรรณ 96.5%</p>
+            <div class="mt-4 space-y-3">
+              <div class="flex items-end justify-between gap-3">
+                <span class="text-sm text-zinc-400 light:text-zinc-600">รับซื้อ</span>
+                <strong id="jewelryBuy" class="text-xl text-liveGreen">-</strong>
+              </div>
+              <div class="flex items-end justify-between gap-3">
+                <span class="text-sm text-zinc-400 light:text-zinc-600">ขายออก</span>
+                <strong id="jewelrySell" class="text-xl text-brightGold">-</strong>
+              </div>
+            </div>
+          </article>
+        </div>
+        <div class="mt-5 flex flex-wrap items-center justify-between gap-3">
+          <p id="lastUpdated" class="text-sm text-zinc-400 light:text-zinc-600">อัปเดตล่าสุดเมื่อ -</p>
+          <button id="refreshPrices" type="button" class="rounded-full border border-premiumGold/25 px-3 py-1 text-xs font-semibold text-brightGold transition hover:bg-premiumGold/10">รีเฟรชราคา</button>
+        </div>
+      </aside>
+    </section>
+
+    <section id="calculator" class="mx-auto grid w-full max-w-7xl gap-6 px-5 pb-14 sm:px-8 lg:grid-cols-[.95fr_1.05fr]">
+      <form class="glass rounded-3xl p-5 shadow-gold sm:p-6" aria-label="Gold calculator controls">
+        <div class="mb-6">
+          <p class="text-sm font-semibold text-premiumGold">Calculator</p>
+          <h2 class="mt-1 text-2xl font-bold">กรอกข้อมูลทองคำ</h2>
+        </div>
+
+        <div class="space-y-5">
+          <label class="block">
+            <span class="mb-2 block text-sm font-medium text-zinc-300 light:text-zinc-700">ประเภททอง</span>
+            <select id="goldType" class="field rounded-2xl px-4 py-3">
+              <option value="bar">ทองคำแท่ง 96.5%</option>
+              <option value="jewelry">ทองรูปพรรณ 96.5%</option>
+              <option value="international">ทองมาตรฐานสากล</option>
+            </select>
+          </label>
+
+          <label class="block">
+            <span class="mb-2 block text-sm font-medium text-zinc-300 light:text-zinc-700">ความบริสุทธิ์</span>
+            <select id="purity" class="field rounded-2xl px-4 py-3">
+              <option value="0.965">Thai Gold 96.5%</option>
+              <option value="0.999">24K / 99.9%</option>
+              <option value="0.916">22K / 91.6%</option>
+              <option value="0.750">18K / 75.0%</option>
+              <option value="0.585">14K / 58.5%</option>
+              <option value="0.417">10K / 41.7%</option>
+              <option value="0.375">9K / 37.5%</option>
+            </select>
+          </label>
+
+          <div class="grid gap-4 sm:grid-cols-[1fr_160px]">
+            <label class="block">
+              <span class="mb-2 block text-sm font-medium text-zinc-300 light:text-zinc-700">น้ำหนักทอง</span>
+              <input id="weight" class="field rounded-2xl px-4 py-3 text-lg font-semibold" type="number" min="0" step="0.01" value="1" inputmode="decimal" placeholder="ระบุน้ำหนัก" />
+            </label>
+
+            <label class="block">
+              <span class="mb-2 block text-sm font-medium text-zinc-300 light:text-zinc-700">หน่วย</span>
+              <select id="unit" class="field rounded-2xl px-4 py-3">
+                <option value="baht">บาททอง</option>
+                <option value="gram">กรัม (g)</option>
+              </select>
+            </label>
+          </div>
+
+          <label class="block">
+            <span class="mb-2 flex items-center justify-between gap-3 text-sm font-medium text-zinc-300 light:text-zinc-700">
+              <span>ส่วนต่างรับซื้อคืน</span>
+              <strong id="discountValue" class="text-premiumGold">8%</strong>
+            </span>
+            <input id="discount" class="w-full accent-premiumGold" type="range" min="0" max="30" value="8" />
+          </label>
+        </div>
+      </form>
+
+      <section class="glass flex min-h-[430px] flex-col justify-between rounded-3xl p-5 shadow-gold sm:p-7">
+        <div>
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <p class="text-sm font-semibold text-premiumGold">Estimated Value</p>
+              <h2 class="mt-1 text-2xl font-bold">ราคาประเมินรวม</h2>
+            </div>
+            <span id="selectedMeta" class="rounded-full border border-white/10 px-3 py-1 text-xs text-zinc-300 light:border-ink/10 light:text-zinc-700">96.5%</span>
+          </div>
+
+          <div class="py-10">
+            <p id="estimatedPrice" class="break-words text-5xl font-extrabold leading-tight text-liveGreen sm:text-6xl lg:text-7xl">฿0</p>
+            <p id="subEstimate" class="mt-4 text-sm leading-6 text-zinc-400 light:text-zinc-600">คำนวณจากราคาขายออกและความบริสุทธิ์ที่เลือก</p>
+          </div>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-3">
+          <div class="rounded-2xl border border-white/10 bg-white/[.045] p-4 light:border-ink/10 light:bg-ink/[.035]">
+            <p class="text-xs text-zinc-400 light:text-zinc-600">น้ำหนักกรัม</p>
+            <strong id="gramOutput" class="mt-2 block text-lg">0 g</strong>
+          </div>
+          <div class="rounded-2xl border border-white/10 bg-white/[.045] p-4 light:border-ink/10 light:bg-ink/[.035]">
+            <p class="text-xs text-zinc-400 light:text-zinc-600">ราคาต่อกรัม</p>
+            <strong id="gramPrice" class="mt-2 block text-lg">฿0</strong>
+          </div>
+          <div class="rounded-2xl border border-white/10 bg-white/[.045] p-4 light:border-ink/10 light:bg-ink/[.035]">
+            <p class="text-xs text-zinc-400 light:text-zinc-600">รับซื้อคืน</p>
+            <strong id="buybackPrice" class="mt-2 block text-lg text-brightGold">฿0</strong>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <section id="faq" class="mx-auto w-full max-w-7xl px-5 pb-16 sm:px-8">
+      <div class="mb-6 max-w-2xl">
+        <p class="text-sm font-semibold text-premiumGold">Information & FAQ</p>
+        <h2 class="mt-1 text-3xl font-bold">ข้อมูลที่ควรรู้ก่อนประเมินราคาทอง</h2>
+      </div>
+      <div class="grid gap-4 md:grid-cols-3">
+        <article class="rounded-3xl border border-white/10 bg-white/[.045] p-5 light:border-ink/10 light:bg-white">
+          <h3 class="text-lg font-bold">ทอง 96.5% คืออะไร</h3>
+          <p class="mt-3 text-sm leading-7 text-zinc-400 light:text-zinc-600">ทองคำมาตรฐานไทยมีเนื้อทองประมาณ 96.5% หรือใกล้เคียง 23K นิยมใช้ซื้อขายในตลาดเยาวราชทั้งทองแท่งและทองรูปพรรณ</p>
+        </article>
+        <article class="rounded-3xl border border-white/10 bg-white/[.045] p-5 light:border-ink/10 light:bg-white">
+          <h3 class="text-lg font-bold">บาททองกับกรัมต่างกันอย่างไร</h3>
+          <p class="mt-3 text-sm leading-7 text-zinc-400 light:text-zinc-600">ในเครื่องมือนี้ 1 บาททองคำแท่งเท่ากับ 15.24 กรัม ส่วนทองรูปพรรณใช้ 15.16 กรัมตามข้อกำหนดที่นิยมอ้างอิง</p>
+        </article>
+        <article class="rounded-3xl border border-white/10 bg-white/[.045] p-5 light:border-ink/10 light:bg-white">
+          <h3 class="text-lg font-bold">สูตรคำนวณราคา</h3>
+          <p class="mt-3 text-sm leading-7 text-zinc-400 light:text-zinc-600">ระบบแปลงน้ำหนักเป็นกรัม คูณราคาต่อกรัมของทอง 96.5% แล้วปรับตามความบริสุทธิ์ที่เลือก เพื่อแสดงมูลค่าโดยประมาณ</p>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-white/10 px-5 py-8 text-center text-sm text-zinc-500 light:border-ink/10 sm:px-8">
+    ราคานี้เป็นข้อมูลจำลองสำหรับการประเมินเบื้องต้น ไม่ใช่ราคาซื้อขายจริงจากสมาคมค้าทองคำ
+  </footer>
+
+  <script>
+    const STATIC_PRICE_ENDPOINT = './latest-gold-price.json';
+    const DIRECT_GTA_ENDPOINT = 'https://goldtraders.or.th/api/GoldPrices/Latest?readjson=false';
+
+    let goldPrices = {
+      source: 'fallback',
+      updatedAt: new Date(Date.now() - 8 * 60 * 1000),
+      thai965: {
+        bar: { buy: 40550, sell: 40650 },
+        jewelry: { buy: 39825.24, sell: 41150 }
+      }
+    };
+
+    const BAHT_GRAM = {
+      bar: 15.24,
+      jewelry: 15.16,
+      international: 15.24
+    };
+
+    const elements = {
+      themeToggle: document.querySelector('#themeToggle'),
+      barBuy: document.querySelector('#barBuy'),
+      barSell: document.querySelector('#barSell'),
+      jewelryBuy: document.querySelector('#jewelryBuy'),
+      jewelrySell: document.querySelector('#jewelrySell'),
+      lastUpdated: document.querySelector('#lastUpdated'),
+      heroStatus: document.querySelector('#heroStatus'),
+      refreshPrices: document.querySelector('#refreshPrices'),
+      goldType: document.querySelector('#goldType'),
+      purity: document.querySelector('#purity'),
+      weight: document.querySelector('#weight'),
+      unit: document.querySelector('#unit'),
+      discount: document.querySelector('#discount'),
+      discountValue: document.querySelector('#discountValue'),
+      estimatedPrice: document.querySelector('#estimatedPrice'),
+      subEstimate: document.querySelector('#subEstimate'),
+      selectedMeta: document.querySelector('#selectedMeta'),
+      gramOutput: document.querySelector('#gramOutput'),
+      gramPrice: document.querySelector('#gramPrice'),
+      buybackPrice: document.querySelector('#buybackPrice')
+    };
+
+    const currency = new Intl.NumberFormat('th-TH', {
+      style: 'currency',
+      currency: 'THB',
+      maximumFractionDigits: 0
+    });
+
+    const decimal = new Intl.NumberFormat('th-TH', {
+      maximumFractionDigits: 2
+    });
+
+    const thaiDateTime = new Intl.DateTimeFormat('th-TH', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+      timeZone: 'Asia/Bangkok'
+    });
+
+    function formatCurrency(value) {
+      return currency.format(Number.isFinite(value) ? value : 0);
+    }
+
+    function renderPrices() {
+      elements.barBuy.textContent = formatCurrency(goldPrices.thai965.bar.buy);
+      elements.barSell.textContent = formatCurrency(goldPrices.thai965.bar.sell);
+      elements.jewelryBuy.textContent = formatCurrency(goldPrices.thai965.jewelry.buy);
+      elements.jewelrySell.textContent = formatCurrency(goldPrices.thai965.jewelry.sell);
+
+      const minutesAgo = Math.max(0, Math.round((Date.now() - goldPrices.updatedAt.getTime()) / 60000));
+      const sourceLabel = goldPrices.source === 'gta' ? 'สมาคมค้าทองคำ' : 'ราคาสำรอง';
+      const timeLabel = minutesAgo < 60
+        ? (minutesAgo === 0 ? 'เมื่อสักครู่' : `เมื่อ ${minutesAgo} นาทีที่แล้ว`)
+        : thaiDateTime.format(goldPrices.updatedAt);
+
+      elements.lastUpdated.textContent = `อัปเดตล่าสุดจาก ${sourceLabel} ${timeLabel}`;
+      elements.heroStatus.lastChild.textContent = goldPrices.source === 'gta'
+        ? ' Gold Traders Association feed'
+        : ' Fallback price, live calculation';
+    }
+
+    function normalizeGoldPrice(payload) {
+      if (!payload || typeof payload !== 'object') {
+        throw new Error('Invalid gold price payload');
+      }
+
+      return {
+        source: 'gta',
+        updatedAt: new Date(`${payload.asTime}+07:00`),
+        priceSeq: payload.priceSeq ?? payload.seq,
+        change: Number(payload.priceChangeFromPrevRow || 0),
+        thai965: {
+          bar: {
+            buy: Number(payload.bL_BuyPrice),
+            sell: Number(payload.bL_SellPrice)
+          },
+          jewelry: {
+            buy: Number(payload.oM965_BuyPrice),
+            sell: Number(payload.oM965_SellPrice)
+          }
+        }
+      };
+    }
+
+    async function fetchJson(url) {
+      const response = await fetch(url, { cache: 'no-store' });
+      if (!response.ok) {
+        throw new Error(`Unable to load gold price: ${response.status}`);
+      }
+      return response.json();
+    }
+
+    function getPriceEndpoints() {
+      const localServerEndpoint = location.hostname === '127.0.0.1' || location.hostname === 'localhost'
+        ? ['/api/gold-price']
+        : [];
+      return [...localServerEndpoint, STATIC_PRICE_ENDPOINT, DIRECT_GTA_ENDPOINT];
+    }
+
+    async function loadFirstAvailablePrice() {
+      let lastError;
+
+      for (const endpoint of getPriceEndpoints()) {
+        try {
+          return await fetchJson(endpoint);
+        } catch (error) {
+          lastError = error;
+        }
+      }
+
+      throw lastError;
+    }
+
+    async function updateLivePrices() {
+      elements.refreshPrices.disabled = true;
+      elements.refreshPrices.textContent = 'กำลังอัปเดต...';
+
+      try {
+        const payload = await loadFirstAvailablePrice();
+        goldPrices = normalizeGoldPrice(payload);
+      } catch (error) {
+        console.warn(error);
+      } finally {
+        renderPrices();
+        calculate();
+        elements.refreshPrices.disabled = false;
+        elements.refreshPrices.textContent = 'รีเฟรชราคา';
+      }
+    }
+
+    function getBaseType(type) {
+      return type === 'jewelry' ? 'jewelry' : 'bar';
+    }
+
+    function getWeightInGrams(type, unit, weight) {
+      if (unit === 'gram') return weight;
+      return weight * BAHT_GRAM[type];
+    }
+
+    function calculate() {
+      const type = elements.goldType.value;
+      const purity = Number(elements.purity.value);
+      const weight = Math.max(0, Number(elements.weight.value) || 0);
+      const unit = elements.unit.value;
+      const discount = Number(elements.discount.value);
+      const baseType = getBaseType(type);
+      const grams = getWeightInGrams(type, unit, weight);
+      const baseSellPerGram = goldPrices.thai965[baseType].sell / BAHT_GRAM[baseType];
+      const adjustedGramPrice = baseSellPerGram * (purity / 0.965);
+      const estimate = grams * adjustedGramPrice;
+      const buyback = estimate * (1 - discount / 100);
+
+      elements.discountValue.textContent = `${discount}%`;
+      elements.estimatedPrice.textContent = formatCurrency(estimate);
+      elements.gramOutput.textContent = `${decimal.format(grams)} g`;
+      elements.gramPrice.textContent = formatCurrency(adjustedGramPrice);
+      elements.buybackPrice.textContent = formatCurrency(buyback);
+      elements.selectedMeta.textContent = elements.purity.options[elements.purity.selectedIndex].text;
+      elements.subEstimate.textContent = `${type === 'jewelry' ? 'ทองรูปพรรณ' : type === 'bar' ? 'ทองคำแท่ง' : 'ทองสากล'} · ${unit === 'baht' ? 'คำนวณจากบาททอง' : 'คำนวณจากกรัม'} · หักส่วนต่างรับซื้อคืน ${discount}%`;
+    }
+
+    function syncPurityWithType() {
+      if (elements.goldType.value === 'international' && elements.purity.value === '0.965') {
+        elements.purity.value = '0.999';
+      }
+
+      if (elements.goldType.value !== 'international') {
+        elements.purity.value = '0.965';
+      }
+    }
+
+    function toggleTheme() {
+      const root = document.documentElement;
+      root.classList.toggle('light');
+      root.classList.toggle('dark');
+      elements.themeToggle.textContent = root.classList.contains('light') ? 'Light' : 'Dark';
+    }
+
+    ['input', 'change'].forEach((eventName) => {
+      [elements.weight, elements.unit, elements.purity, elements.discount].forEach((element) => {
+        element.addEventListener(eventName, calculate);
+      });
+    });
+
+    elements.goldType.addEventListener('change', () => {
+      syncPurityWithType();
+      calculate();
+    });
+
+    elements.themeToggle.addEventListener('click', toggleTheme);
+    elements.refreshPrices.addEventListener('click', updateLivePrices);
+
+    renderPrices();
+    syncPurityWithType();
+    calculate();
+    updateLivePrices();
+    window.setInterval(updateLivePrices, 60000);
+  </script>
+</body>
+</html>
